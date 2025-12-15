@@ -1,138 +1,125 @@
-// Home page of the app.
-// Currently a demo placeholder "please wait" screen.
-// Replace this file with your actual app UI. Do not delete it to use some other file as homepage. Simply replace the entire contents of this file.
-
-import { useEffect, useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
-
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { HAS_TEMPLATE_DEMO, TemplateDemo } from '@/components/TemplateDemo'
-import { Button } from '@/components/ui/button'
-import { Toaster, toast } from '@/components/ui/sonner'
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
-export function HomePage() {
-  const [coins, setCoins] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [elapsedMs, setElapsedMs] = useState(0)
-
-  useEffect(() => {
-    if (!isRunning || startedAt === null) return
-
-    const t = setInterval(() => {
-      setElapsedMs(Date.now() - startedAt)
-    }, 250)
-
-    return () => clearInterval(t)
-  }, [isRunning, startedAt])
-
-  const formatted = useMemo(() => formatDuration(elapsedMs), [elapsedMs])
-
-  const onPleaseWait = () => {
-    setCoins((c) => c + 1)
-
-    if (!isRunning) {
-      // Resume from the current elapsed time
-      setStartedAt(Date.now() - elapsedMs)
-      setIsRunning(true)
-      toast.success('Building your app…', {
-        description: "Hang tight — we're setting everything up.",
-      })
-      return
-    }
-
-    setIsRunning(false)
-    toast.info('Still working…', {
-      description: 'You can come back in a moment.',
-    })
-  }
-
-  const onReset = () => {
-    setCoins(0)
-    setIsRunning(false)
-    setStartedAt(null)
-    setElapsedMs(0)
-    toast('Reset complete')
-  }
-
-  const onAddCoin = () => {
-    setCoins((c) => c + 1)
-    toast('Coin added')
-  }
-
+import React, { useEffect, useState } from 'react';
+import { FolderUp, Image, Loader2, Settings, XCircle } from 'lucide-react';
+import { useGalleryStore } from '@/store/gallery-store';
+import { DirectoryPicker } from '@/components/gallery/DirectoryPicker';
+import { PhotoGrid } from '@/components/gallery/PhotoGrid';
+import { GalleryLightbox } from '@/components/gallery/Lightbox';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { ThemeToggle } from '@/components/ThemeToggle';
+function LoadingOverlay() {
+  const status = useGalleryStore(s => s.status);
+  const { found, processed } = useGalleryStore(s => s.scanStats);
+  const message = status === 'scanning'
+    ? `Scanning for images... Found ${found}`
+    : `Processing images... ${processed} of ${found}`;
+  const progress = found > 0 ? (processed / found) * 100 : 0;
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-      <ThemeToggle />
-      <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-
-      <div className="text-center space-y-8 relative z-10 animate-fade-in w-full">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-            <Sparkles className="w-8 h-8 text-white rotating" />
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
-          </p>
-        </div>
-
-        {HAS_TEMPLATE_DEMO ? (
-          <div className="max-w-5xl mx-auto text-left">
-            <TemplateDemo />
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={onPleaseWait}
-                className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-                aria-live="polite"
-              >
-                Please Wait
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div>
-                Time elapsed:{' '}
-                <span className="font-medium tabular-nums text-foreground">{formatted}</span>
-              </div>
-              <div>
-                Coins:{' '}
-                <span className="font-medium tabular-nums text-foreground">{coins}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={onReset}>
-                Reset
-              </Button>
-              <Button variant="outline" size="sm" onClick={onAddCoin}>
-                Add Coin
-              </Button>
-            </div>
-          </>
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="w-full max-w-md p-8 space-y-4 text-center">
+        <Loader2 className="w-12 h-12 mx-auto animate-spin text-primary" />
+        <h2 className="text-2xl font-semibold text-foreground">{message}</h2>
+        {status === 'processing' && (
+          <Progress value={progress} className="w-full" />
         )}
+        <p className="text-muted-foreground">Please wait, this may take a moment for large libraries.</p>
       </div>
-
-      <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-        <p>Powered by Cloudflare</p>
-      </footer>
-
-      <Toaster richColors closeButton />
     </div>
-  )
+  );
+}
+function Header() {
+  const directoryName = useGalleryStore(s => s.directoryName);
+  const photoCount = useGalleryStore(s => s.photos.length);
+  const loadDirectory = useGalleryStore(s => s.loadDirectory);
+  return (
+    <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center gap-4">
+            <Image className="h-8 w-8 text-primary" />
+            <div className="hidden sm:block">
+              <h1 className="text-xl font-semibold text-foreground">Prisma Gallery</h1>
+              {directoryName && (
+                <p className="text-sm text-muted-foreground">
+                  {directoryName} ({photoCount} items)
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => loadDirectory(false)}>
+              <FolderUp className="mr-2 h-4 w-4" />
+              Change Folder
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+export function HomePage() {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const loadDirectory = useGalleryStore(s => s.loadDirectory);
+  const directoryHandle = useGalleryStore(s => s.directoryHandle);
+  const directoryName = useGalleryStore(s => s.directoryName);
+  const photos = useGalleryStore(s => s.photos);
+  const status = useGalleryStore(s => s.status);
+  const error = useGalleryStore(s => s.error);
+  useEffect(() => {
+    loadDirectory(true);
+  }, [loadDirectory]);
+  const handlePhotoClick = (index: number) => {
+    setLightboxIndex(index);
+  };
+  const closeLightbox = () => {
+    setLightboxIndex(null);
+  };
+  const showLoading = status === 'loading' || status === 'scanning' || status === 'processing';
+  const showPicker = status === 'idle' || status === 'permission-denied' || (status === 'error' && !directoryHandle);
+  const showGrid = status === 'ready' || (status === 'error' && !!directoryHandle);
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <ThemeToggle className="fixed top-4 right-4" />
+      {showLoading && <LoadingOverlay />}
+      {showPicker && (
+        <div className="flex items-center justify-center h-screen">
+          <DirectoryPicker
+            onSelectDirectory={() => loadDirectory(false)}
+            hasCachedHandle={!!directoryHandle}
+            directoryName={directoryName}
+          />
+        </div>
+      )}
+      {showGrid && (
+        <>
+          <Header />
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="py-8 md:py-10 lg:py-12">
+              {error && (
+                <div className="mb-8 p-4 bg-destructive/10 border border-destructive/20 text-destructive-foreground rounded-lg flex items-center gap-3">
+                  <XCircle className="h-5 w-5" />
+                  <div>
+                    <h3 className="font-semibold">An error occurred</h3>
+                    <p className="text-sm">{error}</p>
+                  </div>
+                </div>
+              )}
+              <PhotoGrid photos={photos} onPhotoClick={handlePhotoClick} />
+            </div>
+          </main>
+        </>
+      )}
+      {lightboxIndex !== null && (
+        <GalleryLightbox
+          open={lightboxIndex !== null}
+          index={lightboxIndex}
+          photos={photos}
+          onClose={closeLightbox}
+        />
+      )}
+    </div>
+  );
 }

@@ -7,49 +7,32 @@ const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'];
 export async function saveDirectoryHandle(handle: FileSystemDirectoryHandle): Promise<void> {
   await set(DIRECTORY_HANDLE_KEY, handle);
 }
-/**
- * Retrieve the cached directory handle from IndexedDB (if any).
- */
-export async function getCachedHandle(): Promise<FileSystemDirectoryHandle | null> {
-  const handle = await get<FileSystemDirectoryHandle>(DIRECTORY_HANDLE_KEY);
-  return handle || null;
-}
-/**
- * Prompt the user to select a directory and cache the handle.
- */
-export async function selectDirectoryHandle(): Promise<FileSystemDirectoryHandle | null> {
+export async function getDirectoryHandle(fromCache = true): Promise<FileSystemDirectoryHandle | null> {
+  if (fromCache) {
+    const handle = await get<FileSystemDirectoryHandle>(DIRECTORY_HANDLE_KEY);
+    if (handle) {
+      return handle;
+    }
+  }
   try {
     const handle = await window.showDirectoryPicker();
     await saveDirectoryHandle(handle);
     return handle;
   } catch (error) {
-    if (error instanceof DOMException) {
-      if (error.name === 'AbortError') {
-        console.log('User cancelled the directory picker.');
-      } else if (error.name === 'SecurityError') {
-        console.warn('Directory picker blocked due to security restrictions (e.g., running in an iframe). For full functionality, run locally or deploy to a dedicated domain.');
-      } else {
-        console.error(`Directory picker failed with a DOMException (${error.name}):`, error.message);
-      }
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      console.log('User cancelled the directory picker.');
     } else {
-      console.error('An unexpected error occurred during directory picking:', error);
+      console.error('Error picking directory:', error);
     }
     return null;
   }
 }
-export async function verifyPermission(
-  handle: FileSystemDirectoryHandle,
-  allowRequestPermission = true
-): Promise<boolean> {
-  // `mode` must be a literal `'read'` for the Permission API
-  const opts: { mode: 'read' } = { mode: 'read' };
-  if ((await handle.queryPermission(opts)) === 'granted') {
+export async function verifyPermission(handle: FileSystemDirectoryHandle): Promise<boolean> {
+  const options = { mode: 'read' as FileSystemPermissionMode };
+  if ((await handle.queryPermission(options)) === 'granted') {
     return true;
   }
-  if (!allowRequestPermission) {
-    return false;
-  }
-  if ((await handle.requestPermission(opts)) === 'granted') {
+  if ((await handle.requestPermission(options)) === 'granted') {
     return true;
   }
   console.error('Permission denied for directory handle.');
@@ -72,17 +55,17 @@ export async function processFile(fileHandle: FileSystemFileHandle): Promise<Pho
   try {
     const file = await fileHandle.getFile();
     const src = URL.createObjectURL(file);
-    const exifData = await exifr.parse(file, [
-      'Make',
-      'Model',
-      'ExposureTime',
-      'FNumber',
-      'ISOSpeedRatings',
-      'DateTimeOriginal',
-      'OffsetTimeOriginal',
-      'latitude',
-      'longitude',
-    ]);
+    const exifData = await exifr.parse(file, {
+      make: true,
+      model: true,
+      ExposureTime: true,
+      FNumber: true,
+      ISOSpeedRatings: true,
+      DateTimeOriginal: true,
+      OffsetTimeOriginal: true,
+      latitude: true,
+      longitude: true,
+    });
     // Basic dimensions check
     const image = new Image();
     const dimensions = await new Promise<{ width: number; height: number }>((resolve) => {

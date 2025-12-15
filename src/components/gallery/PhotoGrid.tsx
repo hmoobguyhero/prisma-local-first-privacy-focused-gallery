@@ -3,27 +3,25 @@ import PhotoAlbum from 'react-photo-album';
 import { motion } from 'framer-motion';
 import type { PhotoMetadata } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
 interface PhotoGridProps {
   photos: PhotoMetadata[];
   onPhotoClick: (index: number) => void;
 }
-// Explicitly define props for the custom renderer to fix TS2315
-interface CustomRenderPhotoProps {
+const NextJsImage = ({
+  photo,
+  imageProps: { alt, title, sizes, className, onClick },
+  wrapperStyle,
+}: {
   photo: PhotoMetadata;
-  imageProps: React.ImgHTMLAttributes<HTMLImageElement> & {
+  imageProps: {
     alt: string;
-    title?: string;
-    sizes?: string;
-    onClick: (event: React.MouseEvent<HTMLImageElement>) => void;
+    title: string;
+    sizes: string;
+    className: string;
+    onClick: () => void;
   };
   wrapperStyle: React.CSSProperties;
-}
-const CustomRenderPhoto = ({
-  photo,
-  imageProps: { alt, title, sizes, className, onClick, style },
-  wrapperStyle,
-}: CustomRenderPhotoProps) => {
+}) => {
   return (
     <motion.div
       style={{ ...wrapperStyle, position: 'relative', overflow: 'hidden' }}
@@ -39,13 +37,13 @@ const CustomRenderPhoto = ({
         title={title}
         sizes={sizes}
         onClick={onClick}
-        style={style}
         className={cn('object-cover w-full h-full transition-transform duration-300 group-hover:scale-105', className)}
       />
       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </motion.div>
   );
 };
+import { cn } from '@/lib/utils';
 export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
   if (!photos.length) {
     return (
@@ -59,24 +57,11 @@ export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
   return (
     <PhotoAlbum
       photos={photos}
-      layout="masonry"
-      columns={(containerWidth) => {
-        if (containerWidth < 768) return 2;
-        if (containerWidth < 1024) return 3;
-        return 4;
-      }}
-      sizes={{
-        size: "calc(100vw - 40px)",
-        sizes: [
-            { viewport: "(max-width: 299px)", size: "calc(100vw - 20px)" },
-            { viewport: "(max-width: 599px)", size: "calc(100vw - 30px)" },
-            { viewport: "(max-width: 1199px)", size: "calc(100vw - 40px)" },
-        ],
-      }}
-      spacing={4}
+      layout="rows"
+      targetRowHeight={250}
+      spacing={16}
       onClick={({ index }) => onPhotoClick(index)}
-      // @ts-expect-error The 'renderPhoto' prop is not recognized by the type system in "masonry" layout, but it is supported by the library.
-      renderPhoto={CustomRenderPhoto}
+      renderPhoto={NextJsImage}
     />
   );
 }
