@@ -55,17 +55,17 @@ export async function processFile(fileHandle: FileSystemFileHandle): Promise<Pho
   try {
     const file = await fileHandle.getFile();
     const src = URL.createObjectURL(file);
-    const exifData = await exifr.parse(file, {
-      make: true,
-      model: true,
-      ExposureTime: true,
-      FNumber: true,
-      ISOSpeedRatings: true,
-      DateTimeOriginal: true,
-      OffsetTimeOriginal: true,
-      latitude: true,
-      longitude: true,
-    });
+    const exifData = await exifr.parse(file, [
+      'Make',
+      'Model',
+      'ExposureTime',
+      'FNumber',
+      'ISOSpeedRatings',
+      'DateTimeOriginal',
+      'OffsetTimeOriginal',
+      'latitude',
+      'longitude',
+    ]);
     // Basic dimensions check
     const image = new Image();
     const dimensions = await new Promise<{ width: number; height: number }>((resolve) => {

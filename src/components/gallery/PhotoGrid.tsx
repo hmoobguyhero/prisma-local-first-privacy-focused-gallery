@@ -3,6 +3,7 @@ import PhotoAlbum from 'react-photo-album';
 import { motion } from 'framer-motion';
 import type { PhotoMetadata } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 interface PhotoGridProps {
   photos: PhotoMetadata[];
   onPhotoClick: (index: number) => void;
@@ -43,7 +44,6 @@ const NextJsImage = ({
     </motion.div>
   );
 };
-import { cn } from '@/lib/utils';
 export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
   if (!photos.length) {
     return (
