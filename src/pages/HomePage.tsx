@@ -47,7 +47,7 @@ function Header() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => loadDirectory(false)}>
+            <Button variant="outline" size="sm" onClick={() => loadDirectory(true)}>
               <FolderUp className="mr-2 h-4 w-4" />
               Change Folder
             </Button>
@@ -69,8 +69,10 @@ export function HomePage() {
   const status = useGalleryStore(s => s.status);
   const error = useGalleryStore(s => s.error);
   useEffect(() => {
-    loadDirectory(true);
-  }, [loadDirectory]);
+    const store = useGalleryStore.getState();
+    store.tryLoadCached();
+  }, []);
+
   const handlePhotoClick = (index: number) => {
     setLightboxIndex(index);
   };
@@ -78,7 +80,7 @@ export function HomePage() {
     setLightboxIndex(null);
   };
   const showLoading = status === 'loading' || status === 'scanning' || status === 'processing';
-  const showPicker = status === 'idle' || status === 'permission-denied' || (status === 'error' && !directoryHandle);
+  const showPicker = status === 'idle' || status === 'permission-denied' || status === 'permission-req' || (status === 'error' && !directoryHandle);
   const showGrid = status === 'ready' || (status === 'error' && !!directoryHandle);
   return (
     <div className="min-h-screen bg-background text-foreground">

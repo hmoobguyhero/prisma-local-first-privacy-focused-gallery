@@ -7,13 +7,19 @@ const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'];
 export async function saveDirectoryHandle(handle: FileSystemDirectoryHandle): Promise<void> {
   await set(DIRECTORY_HANDLE_KEY, handle);
 }
-export async function getDirectoryHandle(fromCache = true): Promise<FileSystemDirectoryHandle | null> {
-  if (fromCache) {
-    const handle = await get<FileSystemDirectoryHandle>(DIRECTORY_HANDLE_KEY);
-    if (handle) {
-      return handle;
-    }
-  }
+
+/**
+ * Retrieve the cached directory handle from IndexedDB (if any).
+ */
+export async function getCachedHandle(): Promise<FileSystemDirectoryHandle | null> {
+  const handle = await get<FileSystemDirectoryHandle>(DIRECTORY_HANDLE_KEY);
+  return handle || null;
+}
+
+/**
+ * Prompt the user to select a directory and cache the handle.
+ */
+export async function selectDirectoryHandle(): Promise<FileSystemDirectoryHandle | null> {
   try {
     const handle = await window.showDirectoryPicker();
     await saveDirectoryHandle(handle);
@@ -27,14 +33,26 @@ export async function getDirectoryHandle(fromCache = true): Promise<FileSystemDi
     return null;
   }
 }
-export async function verifyPermission(handle: FileSystemDirectoryHandle): Promise<boolean> {
-  const options = { mode: 'read' as FileSystemPermissionMode };
-  if ((await handle.queryPermission(options)) === 'granted') {
+
+export async function verifyPermission(
+  handle: FileSystemDirectoryHandle,
+  allowRequestPermission = true
+): Promise<boolean> {
+  // `mode` must be a literal `'read'` for the Permission API
+  const opts: { mode: 'read' } = { mode: 'read' };
+
+  if ((await handle.queryPermission(opts)) === 'granted') {
     return true;
   }
-  if ((await handle.requestPermission(options)) === 'granted') {
+
+  if (!allowRequestPermission) {
+    return false;
+  }
+
+  if ((await handle.requestPermission(opts)) === 'granted') {
     return true;
   }
+
   console.error('Permission denied for directory handle.');
   return false;
 }

@@ -57,9 +57,10 @@ export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
   return (
     <PhotoAlbum
       photos={photos}
-      layout="rows"
-      targetRowHeight={250}
-      spacing={16}
+      layout="masonry"
+      defaultWidth={300}
+      sizes="(max-width: 768px) 50vw, 100vw"
+      spacing={4}
       onClick={({ index }) => onPhotoClick(index)}
       renderPhoto={NextJsImage}
     />
