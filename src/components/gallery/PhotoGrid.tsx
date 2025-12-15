@@ -1,5 +1,5 @@
 import React from 'react';
-import PhotoAlbum from 'react-photo-album';
+import PhotoAlbum, { ClickHandlerProps } from 'react-photo-album';
 import { motion } from 'framer-motion';
 import type { PhotoMetadata } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -58,7 +58,11 @@ export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
     <PhotoAlbum
       photos={photos}
       layout="masonry"
-      defaultWidth={300}
+      columns={(containerWidth) => {
+        if (containerWidth < 768) return 2;
+        if (containerWidth < 1024) return 3;
+        return 4;
+      }}
       sizes={{
         size: "calc(100vw - 40px)",
         sizes: [
@@ -68,7 +72,7 @@ export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
         ],
       }}
       spacing={4}
-      onClick={({ index }) => onPhotoClick(index)}
+      onClick={({ index }: ClickHandlerProps<PhotoMetadata>) => onPhotoClick(index)}
       renderPhoto={NextJsImage}
     />
   );
