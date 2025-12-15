@@ -59,7 +59,14 @@ export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
       photos={photos}
       layout="masonry"
       defaultWidth={300}
-      sizes="(max-width: 768px) 50vw, 100vw"
+      sizes={{
+        size: "calc(100vw - 40px)",
+        sizes: [
+            { viewport: "(max-width: 299px)", size: "calc(100vw - 20px)" },
+            { viewport: "(max-width: 599px)", size: "calc(100vw - 30px)" },
+            { viewport: "(max-width: 1199px)", size: "calc(100vw - 40px)" },
+        ],
+      }}
       spacing={4}
       onClick={({ index }) => onPhotoClick(index)}
       renderPhoto={NextJsImage}

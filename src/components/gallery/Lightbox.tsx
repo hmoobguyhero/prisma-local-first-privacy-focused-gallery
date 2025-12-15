@@ -17,15 +17,12 @@ import {
 import type { PhotoMetadata } from '@shared/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-
 interface ExifDataDisplayProps {
   photo: PhotoMetadata;
 }
-
 function ExifDataDisplay({ photo }: ExifDataDisplayProps) {
   const { exif } = photo;
   if (!exif) return null;
-
   const exifItems = [
 {
   icon: Camera,
@@ -69,7 +66,6 @@ function ExifDataDisplay({ photo }: ExifDataDisplayProps) {
         : null,
     },
   ].filter((item) => item.value);
-
   if (exifItems.length === 0) {
     return (
       <div className="p-4 text-sm text-muted-foreground">
@@ -77,7 +73,6 @@ function ExifDataDisplay({ photo }: ExifDataDisplayProps) {
       </div>
     );
   }
-
   return (
     <div className="p-4 space-y-4">
       <h3 className="text-lg font-semibold text-foreground">
@@ -98,14 +93,12 @@ function ExifDataDisplay({ photo }: ExifDataDisplayProps) {
     </div>
   );
 }
-
 interface GalleryLightboxProps {
   open: boolean;
   index: number;
   photos: PhotoMetadata[];
   onClose: () => void;
 }
-
 export function GalleryLightbox({
   open,
   index,
@@ -113,16 +106,13 @@ export function GalleryLightbox({
   onClose,
 }: GalleryLightboxProps) {
   const [showExif, setShowExif] = React.useState(true);
-
   const slides = photos.map((photo) => ({
     src: photo.src,
     width: photo.width,
     height: photo.height,
     title: photo.name,
   }));
-
   const currentPhoto = photos[index];
-
   return (
     <Lightbox
       open={open}
@@ -140,7 +130,7 @@ export function GalleryLightbox({
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
             <img
               src={slide.src}
-              alt={slide.title || ''}
+              alt={String(slide.title || '')}
               style={{
                 maxWidth: '100%',
                 maxHeight: '100%',
@@ -166,4 +156,3 @@ export function GalleryLightbox({
     />
   );
 }
-//
