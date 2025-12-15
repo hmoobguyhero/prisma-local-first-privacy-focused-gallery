@@ -82,7 +82,8 @@ function runSetupCommands() {
     "bun add react-photo-album@^3.1.0",
     "bun add react-window@^1.8.0",
     "bun add yet-another-react-lightbox@^3.13.0",
-    "bun add exifr@^7.1.0"
+    "bun add exifr@^7.1.0",
+    "bun install idb-keyval exifr react-photo-album yet-another-react-lightbox"
 ];
     
     if (commands.length === 0) {
