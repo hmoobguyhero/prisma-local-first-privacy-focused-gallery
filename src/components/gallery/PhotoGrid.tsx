@@ -1,5 +1,5 @@
 import React from 'react';
-import PhotoAlbum, { ClickHandlerProps } from 'react-photo-album';
+import PhotoAlbum, { RenderPhotoProps } from 'react-photo-album';
 import { motion } from 'framer-motion';
 import type { PhotoMetadata } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,21 +8,11 @@ interface PhotoGridProps {
   photos: PhotoMetadata[];
   onPhotoClick: (index: number) => void;
 }
-const NextJsImage = ({
+const CustomRenderPhoto = ({
   photo,
-  imageProps: { alt, title, sizes, className, onClick },
+  imageProps: { alt, title, sizes, className, onClick, style },
   wrapperStyle,
-}: {
-  photo: PhotoMetadata;
-  imageProps: {
-    alt: string;
-    title: string;
-    sizes: string;
-    className: string;
-    onClick: () => void;
-  };
-  wrapperStyle: React.CSSProperties;
-}) => {
+}: RenderPhotoProps<PhotoMetadata>) => {
   return (
     <motion.div
       style={{ ...wrapperStyle, position: 'relative', overflow: 'hidden' }}
@@ -38,6 +28,7 @@ const NextJsImage = ({
         title={title}
         sizes={sizes}
         onClick={onClick}
+        style={style}
         className={cn('object-cover w-full h-full transition-transform duration-300 group-hover:scale-105', className)}
       />
       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -72,8 +63,8 @@ export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
         ],
       }}
       spacing={4}
-      onClick={({ index }: ClickHandlerProps<PhotoMetadata>) => onPhotoClick(index)}
-      renderPhoto={NextJsImage}
+      onClick={({ index }) => onPhotoClick(index)}
+      renderPhoto={CustomRenderPhoto}
     />
   );
 }
