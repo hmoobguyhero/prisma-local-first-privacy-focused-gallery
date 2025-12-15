@@ -77,7 +77,13 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [];
+    const commands = [
+    "bun add idb-keyval@^6.2.0",
+    "bun add react-photo-album@^3.1.0",
+    "bun add react-window@^1.8.0",
+    "bun add yet-another-react-lightbox@^3.13.0",
+    "bun add exifr@^7.1.0"
+];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
