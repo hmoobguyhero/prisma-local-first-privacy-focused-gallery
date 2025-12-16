@@ -84,10 +84,23 @@ export const useGalleryStore = create<GalleryState & GalleryActions>((set, get) 
     get().clearGallery();
     set({ status: 'loading', error: null });
 
-    const handle = selectNew
-      ? await selectDirectoryHandle()
-      : await getCachedHandle();
+    // Retrieve the directory handle according to the required flow:
+    // - If `selectNew` is true, always prompt the user.
+    // - Otherwise, try the cached handle first; if none, fall back to prompting.
+    let handle: FileSystemDirectoryHandle | null = null;
+    if (selectNew) {
+      // Force user to pick a directory
+      handle = await selectDirectoryHandle();
+    } else {
+      // Attempt to use a previously cached handle
+      handle = await getCachedHandle();
+      if (!handle) {
+        // No cached handle – prompt the user to select one
+        handle = await selectDirectoryHandle();
+      }
+    }
 
+    // If the user cancelled the picker (or no handle could be obtained), reset state.
     if (!handle) {
       set({
         status: 'idle',
