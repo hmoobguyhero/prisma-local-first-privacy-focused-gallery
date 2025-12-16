@@ -1,6 +1,6 @@
 # Prisma Gallery
 
-[![[cloudflarebutton]]](https://workers.cloudflare.com)
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/hmoobguyhero/prisma-local-first-privacy-focused-gallery)]](https://workers.cloudflare.com)
 
 Prisma is a sophisticated, privacy-centric web-based image gallery that acts as a 'zero-upload' hosting solution. Instead of uploading gigabytes of photos to a server, Prisma runs entirely in the user's browser, leveraging the modern File System Access API to mount a local directory directly into the web interface. This fulfills the 'pick and retain' requirement by serializing directory handles to IndexedDB, allowing users to rapidly resume viewing their libraries upon return (subject to browser permission verification).
 
@@ -110,7 +110,7 @@ bun deploy
 
 Or use the [Deploy to Cloudflare](https://developers.cloudflare.com/workers/get-started/quickstarts/#deploy-with-the-cloudflare-dashboard) button:
 
-[![[cloudflarebutton]]](https://workers.cloudflare.com)
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/hmoobguyhero/prisma-local-first-privacy-focused-gallery)]](https://workers.cloudflare.com)
 
 **Custom Domain**: Set `workers_dev: false` and add DNS in `wrangler.jsonc`.
 
