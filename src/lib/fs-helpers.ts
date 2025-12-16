@@ -7,7 +7,6 @@ const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.avif'];
 export async function saveDirectoryHandle(handle: FileSystemDirectoryHandle): Promise<void> {
   await set(DIRECTORY_HANDLE_KEY, handle);
 }
-
 /**
  * Retrieve the cached directory handle from IndexedDB (if any).
  */
@@ -15,7 +14,6 @@ export async function getCachedHandle(): Promise<FileSystemDirectoryHandle | nul
   const handle = await get<FileSystemDirectoryHandle>(DIRECTORY_HANDLE_KEY);
   return handle || null;
 }
-
 /**
  * Prompt the user to select a directory and cache the handle.
  */
@@ -25,34 +23,35 @@ export async function selectDirectoryHandle(): Promise<FileSystemDirectoryHandle
     await saveDirectoryHandle(handle);
     return handle;
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      console.log('User cancelled the directory picker.');
+    if (error instanceof DOMException) {
+      if (error.name === 'AbortError') {
+        console.log('User cancelled the directory picker.');
+      } else if (error.name === 'SecurityError') {
+        console.warn('Directory picker blocked due to security restrictions (e.g., running in an iframe). For full functionality, run locally or deploy to a dedicated domain.');
+      } else {
+        console.error(`Directory picker failed with a DOMException (${error.name}):`, error.message);
+      }
     } else {
-      console.error('Error picking directory:', error);
+      console.error('An unexpected error occurred during directory picking:', error);
     }
     return null;
   }
 }
-
 export async function verifyPermission(
   handle: FileSystemDirectoryHandle,
   allowRequestPermission = true
 ): Promise<boolean> {
   // `mode` must be a literal `'read'` for the Permission API
   const opts: { mode: 'read' } = { mode: 'read' };
-
   if ((await handle.queryPermission(opts)) === 'granted') {
     return true;
   }
-
   if (!allowRequestPermission) {
     return false;
   }
-
   if ((await handle.requestPermission(opts)) === 'granted') {
     return true;
   }
-
   console.error('Permission denied for directory handle.');
   return false;
 }

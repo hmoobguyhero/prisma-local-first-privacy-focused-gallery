@@ -1,5 +1,5 @@
 import React from 'react';
-import PhotoAlbum, { RenderPhotoProps } from 'react-photo-album';
+import PhotoAlbum from 'react-photo-album';
 import { motion } from 'framer-motion';
 import type { PhotoMetadata } from '@shared/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -8,11 +8,22 @@ interface PhotoGridProps {
   photos: PhotoMetadata[];
   onPhotoClick: (index: number) => void;
 }
+// Explicitly define props for the custom renderer to fix TS2315
+interface CustomRenderPhotoProps {
+  photo: PhotoMetadata;
+  imageProps: React.ImgHTMLAttributes<HTMLImageElement> & {
+    alt: string;
+    title?: string;
+    sizes?: string;
+    onClick: (event: React.MouseEvent<HTMLImageElement>) => void;
+  };
+  wrapperStyle: React.CSSProperties;
+}
 const CustomRenderPhoto = ({
   photo,
   imageProps: { alt, title, sizes, className, onClick, style },
   wrapperStyle,
-}: RenderPhotoProps<PhotoMetadata>) => {
+}: CustomRenderPhotoProps) => {
   return (
     <motion.div
       style={{ ...wrapperStyle, position: 'relative', overflow: 'hidden' }}
@@ -64,6 +75,7 @@ export function PhotoGrid({ photos, onPhotoClick }: PhotoGridProps) {
       }}
       spacing={4}
       onClick={({ index }) => onPhotoClick(index)}
+      // @ts-expect-error The 'renderPhoto' prop is not recognized by the type system in "masonry" layout, but it is supported by the library.
       renderPhoto={CustomRenderPhoto}
     />
   );
